@@ -35,6 +35,6 @@ for episode in range(num_episodes):
             # time.sleep(100)  # Slow down for human viewing
 
 # Show result
-print("✅ Task succeeded!" if success else "❌ Task failed.")
+
 time.sleep(3)
 env.close()
