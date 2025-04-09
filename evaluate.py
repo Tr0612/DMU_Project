@@ -9,7 +9,7 @@ def evaluate(action_getter, env, render=True):
 
         obs, _ = env.reset()
         success = False
-        for _ in range(1000):  # 200 steps max
+        for _ in range(1000):  # 1000 steps max
             if render:
                 env.render()
 
