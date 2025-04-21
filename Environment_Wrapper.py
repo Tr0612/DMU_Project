@@ -13,7 +13,7 @@ class MultiTaskWrapper(gym.Env):
         
         
         self.observation_space = spaces.Box(
-            low = np.inf,
+            low = -np.inf,
             high = np.inf,
             shape = (self.envs[0].observation_space.shape[0]+self.num_tasks,),
             dtype=np.float32

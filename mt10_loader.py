@@ -1,4 +1,5 @@
 import metaworld
+import evaluate
 import gymnasium
 import random
 
@@ -23,5 +24,6 @@ from Environment_Wrapper import MultiTaskWrapper
 multi_task_env = MultiTaskWrapper(train_envs)
 
 model = SAC("MlpPolicy",multi_task_env,verbose=1)
-model.learn(total_timesteps=1_000_000)
+model.learn(total_timesteps=1e5)
 model.save("sac_mt10_model")
+evaluate.evaluate(lambda obs : model.predict(obs, deterministic=True)[0], multi_task_env, render=True)
