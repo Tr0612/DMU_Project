@@ -1,6 +1,8 @@
 import time
 
 def evaluate(action_getter, env, num_episodes = 5, render=True):
+    if render:
+        env.set_render_mode("human")
     # Reset and get initial observation
     obs, _ = env.reset()
     total_successes = 0
