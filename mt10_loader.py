@@ -23,7 +23,7 @@ multi_task_env = MultiTaskWrapper(train_envs)
 
 model = SAC("MlpPolicy", multi_task_env, verbose=1)
 model.learn(total_timesteps=1e6)
-model.save("sac_mt10_model")
+model.save("sac_mt10_model_new")
 evaluate.evaluate(
     lambda obs: model.predict(obs, deterministic=True)[0],
     multi_task_env,
