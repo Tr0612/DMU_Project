@@ -13,8 +13,8 @@ class MultiTaskWrapper(gym.Env):
         self.current_task = 0
 
         self.observation_space = spaces.Box(
-            low=-np.inf,
-            high=np.inf,
+            low=np.concatenate([self.envs[0].observation_space.low, np.zeros(self.num_tasks)]),
+            high=np.concatenate([self.envs[0].observation_space.high, np.ones(self.num_tasks)]),
             shape=(self.envs[0].observation_space.shape[0] + self.num_tasks,),
             dtype=np.float32,
         )
@@ -34,6 +34,8 @@ class MultiTaskWrapper(gym.Env):
         obs, reward, done, truncated, info = self.env.step(action)
         if truncated:
             self.reset()
+        else:
+            info["task_name"] = self.task_names[self.current_task]
         return self._concat_obs(obs), reward, done, truncated, info
 
     def render(self):

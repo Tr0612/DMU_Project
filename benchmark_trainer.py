@@ -4,8 +4,9 @@ from Environment_Wrapper import MultiTaskWrapper
 
 
 class TrainingParameters:
-    def __init__(self, timesteps):
+    def __init__(self, timesteps, batch_size):
         self.timesteps = timesteps
+        self.batch_size = batch_size
 
 
 def train_on_benchmark(benchmark, benchmark_name, parameters: TrainingParameters):
@@ -23,7 +24,9 @@ def train_on_benchmark(benchmark, benchmark_name, parameters: TrainingParameters
 
     multi_task_env = MultiTaskWrapper(train_envs)
 
-    model = SAC("MlpPolicy", multi_task_env, verbose=1)
+    model = SAC(
+        "MlpPolicy", multi_task_env, batch_size=parameters.batch_size, verbose=1
+    )
     model.learn(total_timesteps=parameters.timesteps, progress_bar=True)
     model.save("sac_" + benchmark_name + "_model")
     evaluate.evaluate(
