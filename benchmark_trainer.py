@@ -29,10 +29,10 @@ def train_on_benchmark(benchmark, benchmark_name, parameters: TrainingParameters
     )
     model.learn(total_timesteps=parameters.timesteps, progress_bar=True)
     model.save("sac_" + benchmark_name + "_model")
-    evaluate.evaluate(
+    evaluation = evaluate.evaluate(
         lambda obs: model.predict(obs, deterministic=True)[0],
         multi_task_env,
         num_episodes=100,
         render=False,
     )
-    return model
+    return model, evaluation

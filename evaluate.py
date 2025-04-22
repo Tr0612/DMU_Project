@@ -50,4 +50,4 @@ def evaluate(action_getter, env, num_episodes=5, render=True):
     print("Attempts by task: ", attempts_by_task)
     print("Total successes: ", total_successes)
     print("Successes by task: ", successes_by_task)
-    return total_successes
+    return attempts_by_task, successes_by_task
