@@ -24,8 +24,8 @@ def evaluate(action_getter, env, num_episodes = 5, render=True):
                 if render:
                     time.sleep(3)  # Slow down for human viewing
                 break
-    if success:
-        total_successes += 1
+        if success:
+            total_successes += 1
 
     # Show result
     if render:
