@@ -1,6 +1,6 @@
-import benchmark_trainer
+import benchmark_evaluator
 import metaworld
 
-benchmark_trainer.train_on_benchmark(
-    metaworld.MT10(), "mt10", benchmark_trainer.TrainingParameters(2e5, 32)
+benchmark_evaluator.evaluate_benchmark(
+    metaworld.MT10(), False, benchmark_evaluator.TrainingParameters(2e5, 32)
 )
