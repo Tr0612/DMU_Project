@@ -10,6 +10,7 @@ class TrainingParameters:
         self.batch_size = batch_size
         self.replay_buffer_type = replay_buffer_type
 
+
 class SACCallback(BaseCallback):
     def __init__(self):
         super().__init__(verbose=1)
@@ -45,11 +46,12 @@ def evaluate_benchmark(
             env,
             replay_buffer_class=replay_buffer_class,
             batch_size=parameters.batch_size,
-            callback=callback,
             verbose=1,
         )
         env.enter_train_mode()
-        model.learn(total_timesteps=parameters.timesteps, progress_bar=True)
+        model.learn(
+            total_timesteps=parameters.timesteps, callback=callback, progress_bar=True
+        )
         if saved_model_name:
             model.save(saved_model_name)
     if is_meta_learning:
