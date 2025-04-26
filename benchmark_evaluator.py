@@ -31,4 +31,7 @@ def evaluate_benchmark(benchmark, is_meta_learning, parameters: TrainingParamete
         num_episodes=100,
         render=False,
     )
+    if saved_model_name:
+        with open(saved_model_name + "_results.txt", "w") as file:
+            file.write(str(evaluation))
     return model, evaluation
