@@ -2,7 +2,7 @@ import benchmark_evaluator
 import metaworld
 
 
-def run_experiment(total_steps, batch_size):
+def run_experiment(total_steps, batch_size, include_individual_metalearn, include_overall_metalearn):
     total_steps = int(float(total_steps))
     mt10 = metaworld.MT10()
     all_test_classes = list(mt10.train_classes.keys())
@@ -21,22 +21,23 @@ def run_experiment(total_steps, batch_size):
                 ["sac", "mt1", test_class, str(total_steps // 10), str(batch_size)]
             ),
         )
-        print("Evaluating ML1")
-        benchmark_evaluator.evaluate_benchmark(
-            ml1,
-            True,
-            mt1_params,
-            10,
-            "_".join(
-                [
-                    "sac",
-                    "metalearn1",
-                    test_class,
-                    str(total_steps // 10),
-                    str(batch_size),
-                ]
-            ),
-        )
+        if include_individual_metalearn:
+            print("Evaluating ML1")
+            benchmark_evaluator.evaluate_benchmark(
+                ml1,
+                True,
+                mt1_params,
+                10,
+                "_".join(
+                    [
+                        "sac",
+                        "metalearn1",
+                        test_class,
+                        str(total_steps // 10),
+                        str(batch_size),
+                    ]
+                ),
+            )
     print("Evaluating MT10")
     mt10_params = benchmark_evaluator.TrainingParameters(total_steps, batch_size)
     benchmark_evaluator.evaluate_benchmark(
@@ -46,12 +47,13 @@ def run_experiment(total_steps, batch_size):
         100,
         "_".join(["sac", "mt10", str(total_steps), str(batch_size)]),
     )
-    print("Evaluating ML10")
-    ml10 = metaworld.ML10()
-    benchmark_evaluator.evaluate_benchmark(
-        ml10,
-        True,
-        mt10_params,
-        100,
-        "_".join(["sac", "metalearn10", str(total_steps), str(batch_size)]),
+    if include_overall_metalearn:
+        print("Evaluating ML10")
+        ml10 = metaworld.ML10()
+        benchmark_evaluator.evaluate_benchmark(
+            ml10,
+            True,
+            mt10_params,
+            100,
+            "_".join(["sac", "metalearn10", str(total_steps), str(batch_size)]),
     )
