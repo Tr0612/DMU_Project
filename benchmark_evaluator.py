@@ -2,13 +2,20 @@ import evaluate
 import env_loader
 from stable_baselines3 import SAC
 
+
 class TrainingParameters:
     def __init__(self, timesteps, batch_size):
         self.timesteps = timesteps
         self.batch_size = batch_size
 
 
-def evaluate_benchmark(benchmark, is_meta_learning, parameters: TrainingParameters, saved_model_name=None):
+def evaluate_benchmark(
+    benchmark,
+    is_meta_learning,
+    parameters: TrainingParameters,
+    evaluation_episodes,
+    saved_model_name=None,
+):
     if is_meta_learning:
         env = env_loader.metalearning_env_from_benchmark(benchmark)
     else:
@@ -28,7 +35,7 @@ def evaluate_benchmark(benchmark, is_meta_learning, parameters: TrainingParamete
     evaluation = evaluate.evaluate(
         lambda obs: model.predict(obs, deterministic=True)[0],
         env,
-        num_episodes=100,
+        num_episodes=evaluation_episodes,
         render=False,
     )
     if saved_model_name:

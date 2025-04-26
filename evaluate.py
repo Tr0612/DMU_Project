@@ -1,6 +1,5 @@
 import time
 
-
 def evaluate(action_getter, env, num_episodes=5, render=True):
     if render:
         env.set_render_mode("human")
