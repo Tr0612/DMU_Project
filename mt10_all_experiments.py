@@ -9,7 +9,7 @@ def run_experiment(
     mt10 = metaworld.MT10()
     all_test_classes = list(mt10.train_classes.keys())
     mt1_params = benchmark_evaluator.TrainingParameters(
-        total_steps // 10, batch_size, 
+        total_steps // 10, batch_size, None,
     )
     for test_class in all_test_classes:
         mt1 = metaworld.MT1(test_class)
