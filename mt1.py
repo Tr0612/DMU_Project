@@ -4,5 +4,8 @@ import metaworld
 reach_mt1 = metaworld.MT1("reach-v2")
 
 benchmark_evaluator.evaluate_benchmark(
-    metaworld.MT1("reach-v2"), False, benchmark_evaluator.TrainingParameters(2e4, 32)
+    metaworld.MT1("reach-v2"),
+    False,
+    benchmark_evaluator.TrainingParameters(1e5, 32),
+    "sac-reach-v2-1e5-32",
 )
