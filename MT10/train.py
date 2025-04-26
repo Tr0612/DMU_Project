@@ -31,7 +31,7 @@ config = (
         actor_lr=3e-4,
         critic_lr=3e-4,
         train_batch_size_per_learner=256,
-        gamma=0.99,
+        gamma=0.91,
         tau=0.005,
     )
 )
@@ -106,3 +106,70 @@ tune.Tuner(
 
 # model.learn(total_timesteps=1_000_000)
 # model.save("sac_mt10_model_per")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# bhu
