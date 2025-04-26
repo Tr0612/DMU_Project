@@ -23,13 +23,13 @@ def evaluate(action_getter, env, num_episodes=5, render=True):
             obs, _, terminated, truncated, info = env.step(action)
             if eval_step == 0:
                 print("Task: ", info["task_name"])
-                if info["task_name"] != None:
-                    attempts_by_task["task_name"] = (
-                        attempts_by_task.get(info["task_name"], 0) + 1
+                current_task = info["task_name"]
+                if current_task != None:
+                    attempts_by_task[current_task] = (
+                        attempts_by_task.get(current_task, 0) + 1
                     )
             if int(info["success"]) == 1:
                 success = True
-                current_task = info["task_name"]
                 print("Success!")
                 if render:
                     time.sleep(3)  # Slow down for human viewing
