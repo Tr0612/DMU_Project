@@ -2,11 +2,15 @@ import benchmark_evaluator
 import metaworld
 
 
-def run_experiment(total_steps, batch_size, include_individual_metalearn, include_overall_metalearn):
+def run_experiment(
+    total_steps, batch_size, include_individual_metalearn, include_overall_metalearn
+):
     total_steps = int(float(total_steps))
     mt10 = metaworld.MT10()
     all_test_classes = list(mt10.train_classes.keys())
-    mt1_params = benchmark_evaluator.TrainingParameters(total_steps // 10, batch_size)
+    mt1_params = benchmark_evaluator.TrainingParameters(
+        total_steps // 10, batch_size, 
+    )
     for test_class in all_test_classes:
         mt1 = metaworld.MT1(test_class)
         ml1 = metaworld.ML1(test_class)
@@ -18,7 +22,14 @@ def run_experiment(total_steps, batch_size, include_individual_metalearn, includ
             mt1_params,
             10,
             "_".join(
-                ["sac", "mt1", test_class, str(total_steps // 10), str(batch_size)]
+                [
+                    "sac",
+                    "mt1",
+                    "default",
+                    test_class,
+                    str(total_steps // 10),
+                    str(batch_size),
+                ]
             ),
         )
         if include_individual_metalearn:
@@ -32,6 +43,7 @@ def run_experiment(total_steps, batch_size, include_individual_metalearn, includ
                     [
                         "sac",
                         "metalearn1",
+                        "default",
                         test_class,
                         str(total_steps // 10),
                         str(batch_size),
@@ -39,13 +51,13 @@ def run_experiment(total_steps, batch_size, include_individual_metalearn, includ
                 ),
             )
     print("Evaluating MT10")
-    mt10_params = benchmark_evaluator.TrainingParameters(total_steps, batch_size)
+    mt10_params = benchmark_evaluator.TrainingParameters(total_steps, batch_size, None)
     benchmark_evaluator.evaluate_benchmark(
         mt10,
         False,
         mt10_params,
         100,
-        "_".join(["sac", "mt10", str(total_steps), str(batch_size)]),
+        "_".join(["sac", "mt10", "default", str(total_steps), str(batch_size)]),
     )
     if include_overall_metalearn:
         print("Evaluating ML10")
@@ -55,5 +67,5 @@ def run_experiment(total_steps, batch_size, include_individual_metalearn, includ
             True,
             mt10_params,
             100,
-            "_".join(["sac", "metalearn10", str(total_steps), str(batch_size)]),
-    )
+            "_".join(["sac", "metalearn10", "default", str(total_steps), str(batch_size)]),
+        )
