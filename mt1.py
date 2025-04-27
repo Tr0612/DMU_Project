@@ -1,14 +1,12 @@
 import benchmark_evaluator
 import metaworld
 
-reach_mt1 = metaworld.MT1("reach-v2")
+# reach_mt1 = metaworld.MT1("window-close-v2")
 
 model, evaluation = benchmark_evaluator.evaluate_benchmark(
     metaworld.MT1("reach-v2"),
     False,
-    benchmark_evaluator.TrainingParameters(1e4, 32, None),
+    benchmark_evaluator.TrainingParameters(1e4, 32, None, [400, 400]),
     10,
-    "sac-reach-her-v2-1e4-32",
+    None,
 )
-
-model.replay_buffer
