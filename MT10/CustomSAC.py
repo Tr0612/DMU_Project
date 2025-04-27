@@ -65,18 +65,9 @@ class CustomSAC(SAC):
                 log_prob = next_log_prob
                 if next_log_prob.dim() == 1:
                     next_log_prob = next_log_prob.unsqueeze(1)
-                if self.ent_coef_optimizer is not None and self.log_ent_coef is not None:
-                # Important: detach the variable from the graph
-                # so we don't change it with other losses
-                # see https://github.com/rail-berkeley/softlearning/issues/60
-                    ent_coef = th.exp(self.log_ent_coef.detach())
-                    assert isinstance(self.target_entropy, float)
-                    ent_coef_loss = -(self.log_ent_coef * (log_prob + self.target_entropy).detach()).mean()
-                    ent_coef_losses.append(ent_coef_loss.item())
-                else:
-                    ent_coef = self.ent_coef_tensor
-
-                ent_coefs.append(ent_coef.item())
+                    
+                ent_coef = th.exp(self.log_ent_coef.detach()) if (self.ent_coef_optimizer is not None and self.log_ent_coef is not None) else self.ent_coef_tensor
+                
                 # print(type(next_actions),next_actions.shape)
                 # print(type(next_log_prob),next_log_prob.shape)
                 # next_q_values = torch.minimum(
@@ -97,7 +88,25 @@ class CustomSAC(SAC):
                 # print(type(next_log_prob),next_log_prob.shape)
                 # print(type(self.gamma),self.gamma.shape)
                 target_q_values = rewards + (one_tensor - dones) * self.gamma * (next_q_values - ent_coef * next_log_prob)
+            
+            actions_pi, log_prob = self.actor.action_log_prob(obs)
+            
+            if log_prob.dim() == 1:
+                log_prob = log_prob.unsqueeze(1)
+                
+            if self.ent_coef_optimizer is not None and self.log_ent_coef is not None:
+                # Important: detach the variable from the graph
+                # so we don't change it with other losses
+                # see https://github.com/rail-berkeley/softlearning/issues/60
+                ent_coef_loss = -(self.log_ent_coef * (log_prob + self.target_entropy).detach()).mean()
+                self.ent_coef_optimizer.zero_grad()
+                ent_coef_loss.backward()
+                self.ent_coef_optimizer.step()
+                ent_coef_losses.append(ent_coef_loss.item())
+            else:
+                ent_coef = self.ent_coef_tensor
 
+            ent_coefs.append(ent_coef.item())
             # # Get current Q estimates
             # current_q1 = self.critic.q_net1(replay_data.observations, replay_data.actions)
             # current_q2 = self.critic.q_net2(replay_data.observations, replay_data.actions)
@@ -118,7 +127,8 @@ class CustomSAC(SAC):
                 + (F.mse_loss(current_q2, target_q_values, reduction='none') * weights).mean()
             
             else:
-                critic_loss = 0.5 * sum(F.mse_loss(current_q, target_q_values) for current_q in current_q_values)
+                # current_q_values = self.critic(replay_data.observations, replay_data.actions)
+                critic_loss = 0.5 * (F.mse_loss(current_q1, target_q_values) + F.mse_loss(current_q2, target_q_values))
             
             assert isinstance(critic_loss, th.Tensor)
             critic_losses.append(critic_loss.item())
