@@ -1,7 +1,10 @@
 from stable_baselines3 import SAC
 import torch
+import torch as th
 import torch.nn.functional as F
 from utils import soft_update
+from stable_baselines3.common.utils import get_parameters_by_name, polyak_update
+import numpy as np
 
 
 class CustomSAC(SAC):
@@ -9,19 +12,37 @@ class CustomSAC(SAC):
     SAC Agent that supports Prioritized Experience Replay (PER)
     """
     
-    
-    
-
     def train(self, gradient_steps: int, batch_size: int = 64) -> None:
         """
         Override the standard SAC train() to support PER.
         """
+        
+        self.policy.set_training_mode(True)
+        # Update optimizers learning rate
+        optimizers = [self.actor.optimizer, self.critic.optimizer]
+        if self.ent_coef_optimizer is not None:
+            optimizers += [self.ent_coef_optimizer]
+        
+        self._update_learning_rate(optimizers)
+
+        ent_coef_losses, ent_coefs = [], []
+        actor_losses, critic_losses = [], []
+        
         # Anneal beta if you want (optional)
         beta = 0.4  # Can slowly anneal beta to 1.0 during training
 
         for gradient_step in range(gradient_steps):
             
-            replay_data,indices,weights = self.replay_buffer.sample(batch_size)
+            sampled = self.replay_buffer.sample(batch_size)
+            
+            if isinstance(sampled, tuple) and len(sampled) == 3:
+                # PER: (ReplayBufferSamples, indices, weights)
+                replay_data, indices, weights = sampled
+            else:
+                # vanilla: just ReplayBufferSamples
+                replay_data = sampled
+                indices = None
+                weights = None
             obs      = replay_data.observations
             actions  = replay_data.actions
             next_obs = replay_data.next_observations
@@ -40,8 +61,22 @@ class CustomSAC(SAC):
             with torch.no_grad():
                 # Target actions come from the target policy
                 next_actions, next_log_prob = self.actor.action_log_prob(replay_data.next_observations)
+                actions_pi = next_actions
+                log_prob = next_log_prob
                 if next_log_prob.dim() == 1:
                     next_log_prob = next_log_prob.unsqueeze(1)
+                if self.ent_coef_optimizer is not None and self.log_ent_coef is not None:
+                # Important: detach the variable from the graph
+                # so we don't change it with other losses
+                # see https://github.com/rail-berkeley/softlearning/issues/60
+                    ent_coef = th.exp(self.log_ent_coef.detach())
+                    assert isinstance(self.target_entropy, float)
+                    ent_coef_loss = -(self.log_ent_coef * (log_prob + self.target_entropy).detach()).mean()
+                    ent_coef_losses.append(ent_coef_loss.item())
+                else:
+                    ent_coef = self.ent_coef_tensor
+
+                ent_coefs.append(ent_coef.item())
                 # print(type(next_actions),next_actions.shape)
                 # print(type(next_log_prob),next_log_prob.shape)
                 # next_q_values = torch.minimum(
@@ -50,8 +85,8 @@ class CustomSAC(SAC):
                 # )
                 # rewards = replay_data.rewards.squeeze(-1)
                 # dones = replay_data.dones.squeeze(-1)
-                device = replay_data.dones.device  # Get the device (cpu or cuda)
-                one_tensor = torch.ones_like(dones,device=device)
+                one_tensor = torch.ones_like(dones)
+                
                 q1_target, q2_target = self.critic_target(replay_data.next_observations, next_actions)
                 next_q_values = torch.min(q1_target, q2_target)
                 # print(type(rewards),rewards.shape)
@@ -61,7 +96,7 @@ class CustomSAC(SAC):
                 # print(type(self.ent_coef),self.ent_coef)
                 # print(type(next_log_prob),next_log_prob.shape)
                 # print(type(self.gamma),self.gamma.shape)
-                target_q_values = rewards + (one_tensor - dones) * self.gamma * (next_q_values - self.ent_coef * next_log_prob)
+                target_q_values = rewards + (one_tensor - dones) * self.gamma * (next_q_values - ent_coef * next_log_prob)
 
             # # Get current Q estimates
             # current_q1 = self.critic.q_net1(replay_data.observations, replay_data.actions)
@@ -74,44 +109,49 @@ class CustomSAC(SAC):
             td_errors = (td_error1 + td_error2) / 2.0  # average two critics
 
             #  Update Priorities
-            new_priorities = td_errors.detach().cpu().numpy().squeeze()
-            self.replay_buffer.update_priorities(indices, new_priorities)
+            if indices is not None:
+                new_priorities = td_errors.detach().cpu().numpy().squeeze()
+                self.replay_buffer.update_priorities(indices, new_priorities)
+            
+            if weights is not None:
+                critic_loss = (F.mse_loss(current_q1, target_q_values, reduction='none') * weights).mean() \
+                + (F.mse_loss(current_q2, target_q_values, reduction='none') * weights).mean()
+            
+            else:
+                critic_loss = 0.5 * sum(F.mse_loss(current_q, target_q_values) for current_q in current_q_values)
+            
+            assert isinstance(critic_loss, th.Tensor)
+            critic_losses.append(critic_loss.item())
 
             # Critic loss
-            critic_loss = (F.mse_loss(current_q1, target_q_values, reduction='none') * weights).mean() \
-            + (F.mse_loss(current_q2, target_q_values, reduction='none') * weights).mean()
 
             self.critic.optimizer.zero_grad()
             critic_loss.backward()
             self.critic.optimizer.step()
 
             # Actor update
-            actions_pi, log_prob = self.actor.action_log_prob(obs)
-            
-            if log_prob.dim() == 1:
-                log_prob = log_prob.unsqueeze(-1)
-                
-            q_pi1, q_pi2 = self.critic(replay_data.observations, actions_pi)
-            q_pi = torch.min(q_pi1,q_pi2)
-            actor_loss = (self.ent_coef * log_prob - q_pi).mean()
+            q_values_pi = th.cat(self.critic(replay_data.observations, actions_pi), dim=1)
+            min_qf_pi, _ = th.min(q_values_pi, dim=1, keepdim=True)
+            actor_loss = (ent_coef * log_prob - min_qf_pi).mean()
+            actor_losses.append(actor_loss.item())
 
+            # Optimize the actor
             self.actor.optimizer.zero_grad()
             actor_loss.backward()
             self.actor.optimizer.step()
 
-            # Temperature update
-            if getattr(self,"automatic_entropy_tuning",False):
-                ent_coef_loss = -(self.log_ent_coef * (log_prob + self.target_entropy).detach()).mean()
-
-                self.ent_coef_optimizer.zero_grad()
-                ent_coef_loss.backward()
-                self.ent_coef_optimizer.step()
-
-                self.ent_coef = self.log_ent_coef.exp()
-            else:
-                ent_coef_loss = torch.tensor(0.0)
-
-            # Target networks soft update
+            # Update target networks
             if gradient_step % self.target_update_interval == 0:
-                soft_update(self.critic_target, self.critic, self.tau)
-                # self.soft_update(self.critic_target, self.critic, self.tau)
+                polyak_update(self.critic.parameters(), self.critic_target.parameters(), self.tau)
+                # Copy running stats, see GH issue #996
+                polyak_update(self.batch_norm_stats, self.batch_norm_stats_target, 1.0)
+
+        self._n_updates += gradient_steps
+
+        self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
+        self.logger.record("train/ent_coef", np.mean(ent_coefs))
+        self.logger.record("train/actor_loss", np.mean(actor_losses))
+        self.logger.record("train/critic_loss", np.mean(critic_losses))
+        if len(ent_coef_losses) > 0:
+            self.logger.record("train/ent_coef_loss", np.mean(ent_coef_losses))
+
