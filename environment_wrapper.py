@@ -71,7 +71,7 @@ class MultiTaskWrapper(gym.Env):
 
     def step(self, action):
         obs, reward, done, truncated, info = self.env.step(action)
-        if truncated:
+        if truncated or done:
             self.reset()
         else:
             info["task_name"] = self.task_names[self.current_task]
