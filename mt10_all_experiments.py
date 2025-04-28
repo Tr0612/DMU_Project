@@ -6,6 +6,7 @@ def run_experiment(
     total_steps,
     batch_size,
     architecture,
+    include_individual_multitask,
     include_individual_metalearn,
     include_overall_multitask,
     include_overall_metalearn,
@@ -21,23 +22,24 @@ def run_experiment(
         ml1 = metaworld.ML1(test_class)
         print("Evaluating class: ", test_class)
         print("Evaluating MT1")
-        benchmark_evaluator.evaluate_benchmark(
-            mt1,
-            False,
-            mt1_params,
-            10,
-            "_".join(
-                [
-                    "sac",
-                    "mt1",
-                    "default",
-                    "-".join([str(x) for x in architecture]),
-                    test_class,
-                    str(total_steps // 10),
-                    str(batch_size),
-                ]
-            ),
-        )
+        if include_individual_multitask:
+            benchmark_evaluator.evaluate_benchmark(
+                mt1,
+                False,
+                mt1_params,
+                10,
+                "_".join(
+                    [
+                        "sac",
+                        "mt1",
+                        "default",
+                        "-".join([str(x) for x in architecture]),
+                        test_class,
+                        str(total_steps // 10),
+                        str(batch_size),
+                    ]
+                ),
+            )
         if include_individual_metalearn:
             print("Evaluating ML1")
             benchmark_evaluator.evaluate_benchmark(
