@@ -42,6 +42,7 @@ def evaluate_benchmark(
     parameters: TrainingParameters,
     evaluation_episodes,
     saved_model_name=None,
+    results_name=None,
 ):
     if is_meta_learning:
         env = env_loader.metalearning_env_from_benchmark(benchmark)
@@ -89,7 +90,9 @@ def evaluate_benchmark(
         render=False,
         on_step=on_step,
     )
+    if results_name is None:
+        results_name = saved_model_name + "_results.txt"
     if saved_model_name:
-        with open(saved_model_name + "_results.txt", "w") as file:
+        with open(results_name, "w") as file:
             file.write(str(evaluation))
     return model, evaluation

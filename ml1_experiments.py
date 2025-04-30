@@ -51,6 +51,17 @@ def run_experiment(
             "_".join(
                 [
                     "sac",
+                    "metalearn1",
+                    "default",
+                    "-".join([str(x) for x in architecture]),
+                    test_class,
+                    str(total_steps // 10),
+                    str(batch_size),
+                ]
+            ),
+            "_".join(
+                [
+                    "sac",
                     "metalearn1-notrain",
                     "default",
                     "-".join([str(x) for x in architecture]),
@@ -66,15 +77,6 @@ def run_experiment(
             True,
             ml1_params,
             10,
-            "_".join(
-                [
-                    "sac",
-                    "metalearn1",
-                    "default",
-                    "-".join([str(x) for x in architecture]),
-                    test_class,
-                    str(total_steps // 10),
-                    str(batch_size),
-                ]
-            ),
+            None,
+            None,
         )

@@ -97,7 +97,7 @@ def evaluate(action_getter, env, num_episodes=5, render=True, on_step=None):
         obs, _ = env.reset()
         success = False
         current_task = None
-        for eval_step in range(int(2e4)):  # 2000 steps max
+        for eval_step in range(int(1e4)):  # 1000 steps max
             total_steps += 1
             if render:
                 env.render()
