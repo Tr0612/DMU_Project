@@ -1,3 +1,0 @@
-Attempts by task:  {'window-close-v2': 11, 'button-press-topdown-v2': 9, 'pick-place-v2': 12, 'drawer-close-v2': 13, 'reach-v2': 10, 'push-v2': 10, 'drawer-open-v2': 10, 'door-open-v2': 9, 'window-open-v2': 7, 'peg-insert-side-v2': 9}
-Total successes:  65
-Successes by task:  {'window-close-v2': 11, 'button-press-topdown-v2': 4, 'drawer-close-v2': 13, 'reach-v2': 10, 'drawer-open-v2': 10, 'pick-place-v2': 5, 'window-open-v2': 2, 'push-v2': 3, 'door-open-v2': 4, 'peg-insert-side-v2': 3}

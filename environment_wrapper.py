@@ -4,7 +4,7 @@ import gymnasium as gym
 
 
 class MultiTaskWrapper(gym.Env):
-    def __init__(self, train_env_dict, test_env_dict, include_skill_id=False):
+    def __init__(self, train_env_dict, test_env_dict, include_skill_id=True):
         super().__init__()
         self.mode = "train"
         train_envs = []
