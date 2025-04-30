@@ -7,11 +7,12 @@ import torch.nn as nn
 
 
 class TrainingParameters:
-    def __init__(self, timesteps, batch_size, replay_buffer_type, architecture):
+    def __init__(self, timesteps, batch_size, replay_buffer_type, architecture, train_during_testing=False):
         self.timesteps = timesteps
         self.batch_size = batch_size
         self.replay_buffer_type = replay_buffer_type
         self.architecture = architecture
+        self.train_during_testing = train_during_testing
 
 
 class SACCallback(BaseCallback):
@@ -41,6 +42,7 @@ def evaluate_benchmark(
     parameters: TrainingParameters,
     evaluation_episodes,
     saved_model_name=None,
+    results_name=None,
 ):
     if is_meta_learning:
         env = env_loader.metalearning_env_from_benchmark(benchmark)
@@ -74,13 +76,13 @@ def evaluate_benchmark(
         )
         if saved_model_name:
             model.save(saved_model_name)
+    on_step = None
     if is_meta_learning:
         env.enter_test_mode()
-        on_step = lambda obs, next_obs, action, reward, done, info: handle_online_step(
-            model, obs, next_obs, action, reward, done, info
-        )
-    else:
-        on_step = None
+        if parameters.train_during_testing:
+            on_step = lambda obs, next_obs, action, reward, done, info: handle_online_step(
+                model, obs, next_obs, action, reward, done, info
+            )
     evaluation = evaluate.evaluate(
         lambda obs: model.predict(obs, deterministic=True)[0],
         env,
@@ -88,7 +90,9 @@ def evaluate_benchmark(
         render=False,
         on_step=on_step,
     )
+    if results_name is None:
+        results_name = saved_model_name + "_results.txt"
     if saved_model_name:
-        with open(saved_model_name + "_results.txt", "w") as file:
+        with open(results_name, "w") as file:
             file.write(str(evaluation))
     return model, evaluation
