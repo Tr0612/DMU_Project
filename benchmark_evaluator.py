@@ -90,9 +90,9 @@ def evaluate_benchmark(
         render=False,
         on_step=on_step,
     )
-    if results_name is None:
-        results_name = saved_model_name + "_results.txt"
     if saved_model_name:
+        if results_name is None:
+            results_name = saved_model_name + "_results.txt"
         with open(results_name, "w") as file:
             file.write(str(evaluation))
     return model, evaluation
