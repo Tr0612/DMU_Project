@@ -143,4 +143,8 @@ def evaluate(
     print("Attempts by task: ", attempts_by_task)
     print("Total successes: ", total_successes)
     print("Successes by task: ", successes_by_task)
-    return attempts_by_task, successes_by_task
+    return {
+        "attempts by task": attempts_by_task,
+        "successes by task": successes_by_task,
+        "test steps": total_steps,
+    }
