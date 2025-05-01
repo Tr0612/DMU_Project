@@ -81,7 +81,14 @@ def evaluate_withChars(
         print(f"{task}: {score*100:.2f}% success rate")
 
 
-def evaluate(action_getter, env, num_episodes=5, render=True, on_step=None):
+def evaluate(
+    action_getter,
+    env,
+    num_episodes=5,
+    max_steps_per_episode=1000,
+    render=True,
+    on_step=None,
+):
     if render:
         env.set_render_mode("human")
     # Reset and get initial observation
@@ -97,7 +104,7 @@ def evaluate(action_getter, env, num_episodes=5, render=True, on_step=None):
         obs, _ = env.reset()
         success = False
         current_task = None
-        for eval_step in range(int(1e4)):  # 1000 steps max
+        for eval_step in range(int(max_steps_per_episode)):
             total_steps += 1
             if render:
                 env.render()

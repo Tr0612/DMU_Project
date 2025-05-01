@@ -28,7 +28,7 @@ def run_experiment(
                 False,
                 mt1_params,
                 10,
-                "_".join(
+                saved_model_name="_".join(
                     [
                         "sac",
                         "mt1",
@@ -47,7 +47,7 @@ def run_experiment(
                 True,
                 mt1_params,
                 10,
-                "_".join(
+                saved_model_name="_".join(
                     [
                         "sac",
                         "metalearn1",
@@ -69,7 +69,7 @@ def run_experiment(
             False,
             mt10_params,
             100,
-            "_".join(
+            saved_model_name="_".join(
                 [
                     "sac",
                     "mt10",
@@ -88,7 +88,7 @@ def run_experiment(
             True,
             mt10_params,
             100,
-            "_".join(
+            saved_model_name="_".join(
                 [
                     "sac",
                     "metalearn10",
