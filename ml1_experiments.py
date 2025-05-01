@@ -33,7 +33,7 @@ def run_experiment(
             mt1_params,
             10,
             test_steps,
-            "_".join(
+            saved_model_name = "_".join(
                 [
                     "sac",
                     "mt1",
@@ -44,7 +44,7 @@ def run_experiment(
                     str(batch_size),
                 ]
             ),
-            "_".join(
+            results_name="_".join(
                 [
                     "sac",
                     "mt1",
@@ -65,7 +65,7 @@ def run_experiment(
                 mt1_params,
                 10,
                 test_steps,
-                "_".join(
+                saved_model_name="_".join(
                     [
                         "sac",
                         "metalearn1",
@@ -76,7 +76,7 @@ def run_experiment(
                         str(batch_size),
                     ]
                 ),
-                "_".join(
+                results_name="_".join(
                     [
                         "sac",
                         "metalearn1-notrain",
@@ -96,8 +96,8 @@ def run_experiment(
             ml1_params,
             10,
             test_steps,
-            None,
-            "_".join(
+            saved_model_name=None,
+            results_name="_".join(
                 [
                     "sac",
                     "metalearn1",
