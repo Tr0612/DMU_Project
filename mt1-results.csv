@@ -1,0 +1,6 @@
+steps,reach,push,window-open,window-close,drawer-open,drawer-close,peg-insert-side,button-press-topdown,door-open,pick-place
+8.00E+03,10,0,0,0,0,10,0,0,0,0
+3.00E+04,10,0,0,7,0,10,0,8,0,0
+8.00E+04,10,0,0,10,0,10,0,10,0,0
+2.00E+05,10,0,10,10,3,10,0,0,0,0
+4.00E+05,10,0,10,10,0,10,0,10,10,0
