@@ -116,11 +116,22 @@ class CustomSAC(SAC):
             td_error1 = torch.abs(current_q1 - target_q_values)
             td_error2 = torch.abs(current_q2 - target_q_values)
             td_errors = (td_error1 + td_error2) / 2.0  # average two critics
+            # print("TD errors min/max/mean:", td_errors.min().item(), td_errors.max().item(), td_errors.mean().item())
 
             #  Update Priorities
             if indices is not None:
                 new_priorities = td_errors.detach().cpu().numpy().squeeze()
                 self.replay_buffer.update_priorities(indices, new_priorities)
+                
+                if gradient_step % 1000 == 0 and self.replay_buffer.full:
+                    priorities = self.replay_buffer.priorities
+                    mean_priority = np.mean(priorities)
+                    std_priority = np.std(priorities)
+                    max_priority = np.max(priorities)
+
+                    self.logger.record("train/per_mean_priority", mean_priority)
+                    self.logger.record("train/per_std_priority", std_priority)
+                    self.logger.record("train/per_max_priority", max_priority)
             
             if weights is not None:
                 critic_loss = (F.mse_loss(current_q1, target_q_values, reduction='none') * weights).mean() \
