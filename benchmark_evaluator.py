@@ -78,6 +78,8 @@ def evaluate_benchmark(
     if saved_model_name:
         if results_name is None:
             results_name = saved_model_name
+    if not isinstance(evaluation_episodes, list):
+        evaluation_episodes = [evaluation_episodes]
     if is_meta_learning:
         env = env_loader.metalearning_env_from_benchmark(benchmark)
     else:
@@ -105,7 +107,9 @@ def evaluate_benchmark(
             policy_kwargs=policy_kwargs,
         )
         remaining_timesteps = parameters.timesteps
-        while remaining_timesteps > 0:
+        if checkpoint_frequency is None:
+            checkpoint_frequency = remaining_timesteps
+        while True:
             env.enter_train_mode()
             model.learn(
                 total_timesteps=checkpoint_frequency,
@@ -113,12 +117,14 @@ def evaluate_benchmark(
                 progress_bar=True,
             )
             remaining_timesteps -= checkpoint_frequency
+            if remaining_timesteps <= 0:
+                break
             if is_meta_learning:
                 env.enter_test_mode()
             perform_evaluation(
                 model,
                 env,
-                evaluation_episodes,
+                evaluation_episodes[-1],
                 evaluation_max_steps,
                 None,
                 results_name,
@@ -135,14 +141,15 @@ def evaluate_benchmark(
                     model, obs, next_obs, action, reward, done, info
                 )
             )
-
-    evaluation = perform_evaluation(
-        model,
-        env,
-        evaluation_episodes,
-        evaluation_max_steps,
-        on_step,
-        results_name,
-        "final",
-    )
-    return model, evaluation
+    latest_evaluation = None
+    for evaluation_episode in evaluation_episodes:
+        latest_evaluation = perform_evaluation(
+            model,
+            env,
+            evaluation_episode,
+            evaluation_max_steps,
+            on_step,
+            results_name,
+            str(evaluation_episode),
+        )
+    return model, latest_evaluation
