@@ -33,6 +33,7 @@ def run_experiment(
             mt1_params,
             10,
             test_steps,
+            checkpoint_frequency=1000,
             saved_model_name = "_".join(
                 [
                     "sac",
@@ -65,6 +66,7 @@ def run_experiment(
                 mt1_params,
                 10,
                 test_steps,
+                checkpoint_frequency=1000,
                 saved_model_name="_".join(
                     [
                         "sac",
@@ -96,6 +98,7 @@ def run_experiment(
             ml1_params,
             10,
             test_steps,
+            checkpoint_frequency=1000,
             saved_model_name=None,
             results_name="_".join(
                 [
