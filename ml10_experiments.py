@@ -35,6 +35,7 @@ def run_experiment(
         True,
         ml10_params,
         test_episodes,
+        checkpoint_frequency=None,
         saved_model_name=None,
         results_name="_".join(
             [

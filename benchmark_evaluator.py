@@ -150,6 +150,6 @@ def evaluate_benchmark(
             evaluation_max_steps,
             on_step,
             results_name,
-            str(evaluation_episode),
+            "final_" + str(evaluation_episode),
         )
     return model, latest_evaluation
