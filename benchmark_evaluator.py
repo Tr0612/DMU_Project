@@ -4,6 +4,7 @@ import numpy as np
 from stable_baselines3 import SAC, HerReplayBuffer
 from stable_baselines3.common.callbacks import BaseCallback
 import torch.nn as nn
+from Prioritized_Wrapper import PrioritizedReplayBuffer
 
 
 class TrainingParameters:
@@ -55,6 +56,8 @@ def evaluate_benchmark(
         print("Training new model")
         if parameters.replay_buffer_type == "her":
             replay_buffer_class = HerReplayBuffer
+        elif parameters.replay_buffer_type == "per":
+            replay_buffer_class = PrioritizedReplayBuffer
         else:
             replay_buffer_class = None
         callback = SACCallback()
