@@ -24,11 +24,12 @@ def run_experiment(
     test_episodes,
     batch_size,
     architecture,
+    replay_buffer
 ):
     total_steps = int(float(total_steps))
     ml10 = metaworld.ML10()
     ml10_params = benchmark_evaluator.TrainingParameters(
-        total_steps, 32, None, [400, 400], True
+        total_steps, 32, replay_buffer, [400, 400], True
     )
     benchmark_evaluator.evaluate_benchmark(
         ml10,
