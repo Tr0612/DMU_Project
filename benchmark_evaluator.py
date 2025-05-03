@@ -5,7 +5,7 @@ from stable_baselines3 import SAC, HerReplayBuffer
 from stable_baselines3.common.callbacks import BaseCallback
 import torch.nn as nn
 from Prioritized_Wrapper import PrioritizedReplayBuffer
-
+from CustomSAC import CustomSAC
 
 class TrainingParameters:
     def __init__(
@@ -101,14 +101,15 @@ def evaluate_benchmark(
             "net_arch": {"pi": parameters.architecture, "qf": parameters.architecture},
             "activation_fn": nn.ReLU,
         }
-        model = SAC(
-            "MlpPolicy",
-            env,
-            replay_buffer_class=replay_buffer_class,
-            batch_size=parameters.batch_size,
-            verbose=1,
-            policy_kwargs=policy_kwargs,
-        )
+        model_kwargs = {
+            "policy": "MlpPolicy",
+            "env": env,
+            "replay_buffer_class": replay_buffer_class,
+            "batch_size": parameters.batch_size,
+            "verbose": 1,
+            "policy_kwargs": policy_kwargs,
+        }
+        model = SAC(**model_kwargs) if not (parameters.replay_buffer_type == "per") else CustomSAC(**model_kwargs)
         remaining_timesteps = parameters.timesteps
         if checkpoint_frequency is None:
             checkpoint_frequency = remaining_timesteps
