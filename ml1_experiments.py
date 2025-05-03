@@ -6,11 +6,15 @@ def list_all_classes():
     mt10 = metaworld.MT10()
     return list(mt10.train_classes.keys())
 
+
 def run_experiment(
     total_steps,
     batch_size,
     architecture,
-    all_test_classes
+    all_test_classes,
+    evaluate_ml_no_train,
+    test_steps,
+    checkpoints=False,
 ):
     total_steps = int(float(total_steps))
     mt1_params = benchmark_evaluator.TrainingParameters(
@@ -30,7 +34,9 @@ def run_experiment(
             False,
             mt1_params,
             10,
-            "_".join(
+            test_steps,
+            checkpoint_frequency=(1000 if checkpoints else None),
+            saved_model_name="_".join(
                 [
                     "sac",
                     "mt1",
@@ -41,14 +47,62 @@ def run_experiment(
                     str(batch_size),
                 ]
             ),
+            results_name="_".join(
+                [
+                    "sac",
+                    "mt1",
+                    "default",
+                    "-".join([str(x) for x in architecture]),
+                    test_class,
+                    str(total_steps // 10),
+                    str(test_steps),
+                    str(batch_size),
+                ]
+            ),
         )
-        print("Evaluating ML1 with no training during testing")
+        if evaluate_ml_no_train:
+            print("Evaluating ML1 with no training during testing")
+            benchmark_evaluator.evaluate_benchmark(
+                ml1,
+                True,
+                mt1_params,
+                10,
+                test_steps,
+                checkpoint_frequency=(1000 if checkpoints else None),
+                saved_model_name="_".join(
+                    [
+                        "sac",
+                        "metalearn1",
+                        "default",
+                        "-".join([str(x) for x in architecture]),
+                        test_class,
+                        str(total_steps // 10),
+                        str(batch_size),
+                    ]
+                ),
+                results_name="_".join(
+                    [
+                        "sac",
+                        "metalearn1-notrain",
+                        "default",
+                        "-".join([str(x) for x in architecture]),
+                        test_class,
+                        str(total_steps // 10),
+                        str(test_steps),
+                        str(batch_size),
+                    ]
+                ),
+            )
+        print("Evaluating ML1 with training during testing")
         benchmark_evaluator.evaluate_benchmark(
             ml1,
             True,
-            mt1_params,
+            ml1_params,
             10,
-            "_".join(
+            test_steps,
+            checkpoint_frequency=(1000 if checkpoints else None),
+            saved_model_name=None,
+            results_name="_".join(
                 [
                     "sac",
                     "metalearn1",
@@ -56,27 +110,8 @@ def run_experiment(
                     "-".join([str(x) for x in architecture]),
                     test_class,
                     str(total_steps // 10),
+                    str(test_steps),
                     str(batch_size),
                 ]
             ),
-            "_".join(
-                [
-                    "sac",
-                    "metalearn1-notrain",
-                    "default",
-                    "-".join([str(x) for x in architecture]),
-                    test_class,
-                    str(total_steps // 10),
-                    str(batch_size),
-                ]
-            ),
-        )
-        print("Evaluating ML1 with training during testing")
-        benchmark_evaluator.evaluate_benchmark(
-            ml1,
-            True,
-            ml1_params,
-            10,
-            None,
-            None,
         )
